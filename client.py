@@ -1,7 +1,8 @@
 import sys
 import re
-import getMac
 import socket
+import getMac
+import DHCP
 
 # intake argument and verify that they are correct
 Arguments = sys.argv[1:]
@@ -19,25 +20,41 @@ if Mflag :
     if not pattern.match(MacAddress) :
         print "In-valid Mac Address."
         sys.exit(0)
-## Find the Mac address of the client
-MacAddress = getMac.FindMac()
+    ### Conver from current format to bytes
+    MacAddress = getMac.ConvertToBytes(MacAddress)
 
-# Send the mac address to the server and recieve the IP
-IpRecieved = False
-while not IpRecieved :
-    ## Send the msg to server
-    UDP_IP = '255.255.255.255'
-    UDP_PORT = 12345
-    MESSAGE = MacAddress
-    sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+else :
+    ## Find the Mac address of the client
+    MacAddress = getMac.FindMac()
 
-    ## Wait for the server to reply
-    
+MAX_BYTES = 65535
+Src = '0.0.0.0'
+Dest = '255.255.255.255'
+ClientPort = 12345
+ServerPort = 12346
+
+dest = (Dest, clientPort)
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+sock.bind((Src, serverPort))
+
 # DHCP Discover
+package = DHCP.DhcpDiscover(MacAddress)
+sock.sendto(package, dest)
 
 # DHCP Offer
+OfferRecieved = False
+while not OfferRecieved :
+    try :
+        sock.settimeout(5)
+        data, address = sock.recvfrom(MAX_BYTES)
+        OfferRecieved = True
 
+    except socket.timeout :
+        sock.sendto(package, dest)
+        
 # DHCP Acknowledgement - CLient
 
 # DHCP Acknowledgement - Server
