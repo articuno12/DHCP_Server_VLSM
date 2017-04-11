@@ -80,17 +80,17 @@ def DhcpRequest(MacAddress,TransactionId,ServerIp,RequestedIp):
     return package
 
 
-def DhcpAck(ClientMacAddress,TransactionId) :
+def DhcpAck(ClientMacAddress,TransactionId,ServerIp,ClientIp,SubnetMask,DNSIp,GatewayIp) :
     OP = bytes([0x02])
     HTYPE = bytes([0x01])
     HLEN = bytes([0x06])
     HOPS = bytes([0x00])
     XID = TransactionId
     SECS = bytes([0x00, 0x00])
-    FLAGS = bytes([0x00, 0x00])
+    FLAGS = bytes([0x80, 0x00])
     CIADDR = bytes([0x00, 0x00, 0x00, 0x00])
-    YIADDR = bytes([0xC0, 0xA8, 0x01, 0x64])
-    SIADDR = bytes([0x00, 0x00, 0x00, 0x00])
+    YIADDR = bytes(ClientIp)
+    SIADDR = bytes(ServerIp)
     GIADDR = bytes([0x00, 0x00, 0x00, 0x00])
     CHADDR1 = ClientMacAddress
     CHADDR2 = bytes([0x00, 0x00])
@@ -98,13 +98,15 @@ def DhcpAck(ClientMacAddress,TransactionId) :
     CHADDR4 = bytes([0x00, 0x00, 0x00, 0x00])
     CHADDR5 = bytes(192)
     Magiccookie = bytes([0x63, 0x82, 0x53, 0x63])
-    DHCPOptions1 = bytes([53 , 1 , 5])
-    DHCPOptions2 = bytes([1 , 4 , 0xFF, 0xFF, 0xFF, 0x00])
-    DHCPOptions3 = bytes([3 , 4 , 0xC0, 0xA8, 0x01, 0x01])
-    DHCPOptions4 = bytes([51 , 4 , 0x00, 0x01, 0x51, 0x80])
-    DHCPOptions5 = bytes([54 , 4 , 0xC0, 0xA8, 0x01, 0x01])
+    DHCPOptions1 = bytes([53 , 1 , 5]) #DHCP ACK(value = 5)
+    DHCPOptions2 = bytes([1 , 4 , SubnetMask[0], SubnetMask[1], SubnetMask[2], SubnetMask[3]]) #255.255.255.0 subnet mask
+    DHCPOptions3 = bytes([3 , 4 , GatewayIp[0], GatewayIp[1], GatewayIp[2], GatewayIp[3]]) #router
+    DHCPOptions4 = bytes([51 , 4 , 0x00, 0x01, 0x51, 0x80]) #86400s(1 day) IP address lease time
+    DHCPOptions5 = bytes([54 , 4 , ServerIp[0], ServerIp[1], ServerIp[2], ServerIp[3]]) #DHCP server
+    DHCPOptions6 = bytes([6 , 4 , DNSIp[0], DNSIp[1], DNSIp[2], DNSIp[3]]) #DHCP DNS Server
+    DHCP
     End = bytes([0xff])
 
-    package = OP + HTYPE + HLEN + HOPS + XID + SECS + FLAGS + CIADDR +YIADDR + SIADDR + GIADDR + CHADDR1 + CHADDR2 + CHADDR3 + CHADDR4 + CHADDR5 + Magiccookie + DHCPOptions1 + DHCPOptions2 + DHCPOptions3 + DHCPOptions4 + DHCPOptions5 + End
+    package = OP + HTYPE + HLEN + HOPS + XID + SECS + FLAGS + CIADDR +YIADDR + SIADDR + GIADDR + CHADDR1 + CHADDR2 + CHADDR3 + CHADDR4 + CHADDR5 + Magiccookie + DHCPOptions1 + DHCPOptions2 + DHCPOptions3 + DHCPOptions4 + DHCPOptions5 + DHCPOptions6 + End
 
     return package
