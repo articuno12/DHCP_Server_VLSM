@@ -78,3 +78,33 @@ def DhcpRequest(MacAddress,TransactionId,ServerIp,RequestedIp):
     package = OP + HTYPE + HLEN + HOPS + XID + SECS + FLAGS + CIADDR +YIADDR + SIADDR + GIADDR + CHADDR1 + CHADDR2 + CHADDR3 + CHADDR4 + CHADDR5 + MagicCookie + DHCPOptions1 + DHCPOptions2 +  DHCPOptions3 + End
 
     return package
+
+
+def DhcpAck(ClientMacAddress,TransactionId) :
+    OP = bytes([0x02])
+    HTYPE = bytes([0x01])
+    HLEN = bytes([0x06])
+    HOPS = bytes([0x00])
+    XID = TransactionId
+    SECS = bytes([0x00, 0x00])
+    FLAGS = bytes([0x00, 0x00])
+    CIADDR = bytes([0x00, 0x00, 0x00, 0x00])
+    YIADDR = bytes([0xC0, 0xA8, 0x01, 0x64])
+    SIADDR = bytes([0x00, 0x00, 0x00, 0x00])
+    GIADDR = bytes([0x00, 0x00, 0x00, 0x00])
+    CHADDR1 = ClientMacAddress
+    CHADDR2 = bytes([0x00, 0x00])
+    CHADDR3 = bytes([0x00, 0x00, 0x00, 0x00])
+    CHADDR4 = bytes([0x00, 0x00, 0x00, 0x00])
+    CHADDR5 = bytes(192)
+    Magiccookie = bytes([0x63, 0x82, 0x53, 0x63])
+    DHCPOptions1 = bytes([53 , 1 , 5])
+    DHCPOptions2 = bytes([1 , 4 , 0xFF, 0xFF, 0xFF, 0x00])
+    DHCPOptions3 = bytes([3 , 4 , 0xC0, 0xA8, 0x01, 0x01])
+    DHCPOptions4 = bytes([51 , 4 , 0x00, 0x01, 0x51, 0x80])
+    DHCPOptions5 = bytes([54 , 4 , 0xC0, 0xA8, 0x01, 0x01])
+    End = bytes([0xff])
+
+    package = OP + HTYPE + HLEN + HOPS + XID + SECS + FLAGS + CIADDR +YIADDR + SIADDR + GIADDR + CHADDR1 + CHADDR2 + CHADDR3 + CHADDR4 + CHADDR5 + Magiccookie + DHCPOptions1 + DHCPOptions2 + DHCPOptions3 + DHCPOptions4 + DHCPOptions5 + End
+
+    return package
