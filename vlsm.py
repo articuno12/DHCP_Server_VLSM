@@ -3,7 +3,9 @@ from math import pow, ceil, log
 info = {}
 no_of_others = 0
 macs={}
-current_other_ip
+current_other_ip = None
+mask = None
+dhcp_Server_id = None
 
 def min_pow2(x):  # how many bits do we need to borrow
     z = log(x, 2)  # to cover number of hosts
@@ -169,6 +171,7 @@ def getip(mac):
     else:
         if(no_of_others == 0):
             Error = "IP cant be assigned"
+            l = None
         else:
             l = 'others'
             Error = None
@@ -182,31 +185,24 @@ def getip(mac):
             else:
                 client_ip = None
 
-            mask = info[l][10]
+            mask_l = info[l][10]
             gateway_ip = dns_ip = info[l][5]
-        else:
-            dhcp_ip = getnextip(info['others'][5])
-            if lessthan(getnextip(info[l][6]), info[l][7]):
-                if(getnextip(info[l][6])!= dhcp_ip):
-                    client_ip = info[l][6] = getnextip(info[l][6])
-                else:
-                    if lessthan(dhcp_ip, info[l][7]):
-                        client_ip = info[l][6] = getnextip(info[l][6])
-                    else :
-                        client_ip = None
-                if client_ip:
-                    mask = info[l][10]
-                    gateway_ip = dns_ip = info[l][5]
-            else:
-                client_ip = None
+
+        elif l=='others':
+            no_of_others -=1
+            client_ip = getnextip(current_other_ip)
+            mask_l = mask
+            gateway_ip = dns_ip = dhcp_Server_id
+
         if client_ip:
             client_ip = norm(client_ip)
             gateway_ip = norm(gateway_ip)
             dns_ip = norm(dns_ip)
+            mask_l = norm(mask_l)
         else:
             Error = "IP cant be assigned"
 
     if Error :
         return 0,Error
     else:
-        return 1,{'ClientIP':client_ip ,'mask':mask , 'DHCPIP':dhcp_ip , 'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
+        return 1,{'ClientIP':client_ip ,'mask':mask ,  'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
