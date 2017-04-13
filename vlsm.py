@@ -112,7 +112,7 @@ def vlsm(ipaddr, hosts):
                getlast(ipaddr, getmask(int(32 - bits))),
                getbcast(ipaddr, getmask(int(32 - bits))),
                32 - bits,
-               norm(getmask(int(32 - bits)))]
+               getmask(int(32 - bits))]
 
 
         ipaddr = getnextaddr(ipaddr, getmask(int(32 - bits)))
@@ -120,10 +120,14 @@ def vlsm(ipaddr, hosts):
 
 def setserver(): #returns ip for client and dns server
     args=[]
-    with open('subnets.conf', 'r') as f:
-        for line in f:
-            args.append(line.split('\n')[0])
-
+    try :
+        with open('subnets.conf', 'r') as f:
+            for line in f:
+                args.append(line.split('\n')[0])
+                print line
+    except :
+        print("Unable to read conf file")
+        return None
     ip = args[0].split("/")[0].split(".")   # 192.168.1.0/24 2 8 22 54  -> list of str ['192','168','1','0']
     cidr = int(args[0].split("/")[1])       # 192.168.1.0/24 2 8 22 54  -> str 24
     mask = getmask(cidr)                    #                       24  -> list of int [255,255,255,0]
@@ -132,8 +136,10 @@ def setserver(): #returns ip for client and dns server
     labs={}
 
     for i in range(2,2+n):
-        labs[str(str(args[i]).split(':')[0])]= min_pow2(int(str(args[i]).split(':')[1]) + 2)
-        total_hosts+= min_pow2(int(str(args[i]).split(':')[1]) + 2)
+        labs[str(str(args[i]).split(':')[0])]= int(pow(2,min_pow2(int(str(args[i]).split(':')[1]) + 2)))
+        total_hosts+= int(pow(2,min_pow2(int(str(args[i]).split(':')[1]) + 2)))
+    print labs
+    print total_hosts
 
     for x in range(len(ip)):  # list of str ['192','168','1','0'] ->
         ip[x] = int(ip[x])  # list of int [192,168,1,0]
@@ -150,7 +156,7 @@ def setserver(): #returns ip for client and dns server
 
     if (pow(2, 32 - cidr) - 2 - total_hosts) > 1:
         no_of_others = pow(2, 32 - cidr) - 2 - total_hosts -1
-        dhcp_Server_id = getnextip(info[[len(t)-1][1]][8])
+        dhcp_Server_id = getnextip(info[t[len(t)-1][1]][8])
         no_others = False
     elif (pow(2, 32 - cidr) - 2 - total_hosts) == 1:
         no_of_others = 0
@@ -160,7 +166,10 @@ def setserver(): #returns ip for client and dns server
         dhcp_Server_id = None
         Error = "Ip cant be assigned to DHCP server"
     current_other_ip = dhcp_Server_id
-    return norm(dhcp_Server_id)
+    if dhcp_Server_id :
+        return norm(dhcp_Server_id)
+    else :
+        return None
 
 def getip(mac):
 
@@ -198,6 +207,7 @@ def getip(mac):
             client_ip = norm(client_ip)
             gateway_ip = norm(gateway_ip)
             dns_ip = norm(dns_ip)
+            print mask_l
             mask_l = norm(mask_l)
         else:
             Error = "IP cant be assigned"
@@ -205,4 +215,4 @@ def getip(mac):
     if Error :
         return 0,Error
     else:
-        return 1,{'ClientIP':client_ip ,'mask':mask ,  'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
+        return 1,{'ClientIP':client_ip ,'mask':mask_l ,  'GatewayIP':gateway_ip , 'DNSIP':dns_ip }

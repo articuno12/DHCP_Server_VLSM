@@ -103,11 +103,11 @@ def DhcpDecline(ClientMacAddress,TransactionId,ServerIp) :
     XID = hex2bytestring(TransactionId)   #Transaction ID
     SECS = hex2bytestring([0x00, 0x00])
     FLAGS = hex2bytestring([0x00, 0x00])
-    CHADDR1 = hex2bytestring(ClientMacAddress)
+    CIADDR = hex2bytestring([0x00, 0x00, 0x00, 0x00])   #Client IP address: 0.0.0.0
     YIADDR = hex2bytestring([0x00, 0x00, 0x00, 0x00])
     SIADDR = hex2bytestring(ServerIp)
     GIADDR = hex2bytestring([0x00, 0x00, 0x00, 0x00])
-    CHADDR1 = ClientMacAddress
+    CHADDR1 = hex2bytestring(ClientMacAddress)
     CHADDR2 = hex2bytestring([0x00, 0x00])
     CHADDR3 = hex2bytestring([0x00, 0x00, 0x00, 0x00])
     CHADDR4 = hex2bytestring([0x00, 0x00, 0x00, 0x00])

@@ -61,7 +61,7 @@ while not OfferRecieved :
             print("Recieved Unknow message")
             continue
         MsgOptions = DHCP.ExtractOption(data)
-        if hex(56) in MsgOptions and MsgOptions[hex(56)] == 0 :
+        if hex(56) in MsgOptions and MsgOptions[hex(56)][0] == hex(0) :
             print("New Ip not available")
             sys.exit(0)
 

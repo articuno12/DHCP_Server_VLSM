@@ -4,10 +4,16 @@ import socket
 import random
 import getMac
 import DHCP
-import vlsm
+from vlsm import *
+
+Src = setserver()
+if not Src :
+    print("The given Server Cannot be configured")
+    sys.exit(0)
+print Src
 
 MAX_BYTES = 65535
-Src = "192.168.1.1"
+# Src = "192.168.1.1"
 Dest = "255.255.255.255"
 clientPort = 12345
 serverPort = 12346
@@ -54,7 +60,7 @@ while True :
         print('\nGot DHCPDISCOVER : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
 
         # Get new Ip to be allocated to the client
-        Check , Dic = vlsm.get_info(Mac_str)
+        Check , Dic = getip(Mac_str)
         print Check
         print Dic
         OfferedIp = Dic['ClientIP'].split('.')
@@ -75,7 +81,7 @@ while True :
             print('\n DHCP Declined : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
             package = DHCP.DhcpDecline(ClientMacAddress,TransactionId,ServerIp)
             sock.sendto(package,dest)
-            del Active[TransactionId]
+            Active.remove(TransactionId)
             continue
 
         Offered[str(TransactionId)] = (ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask,DNSIp,GateWayIp)
