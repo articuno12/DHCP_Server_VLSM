@@ -117,7 +117,7 @@ def get_info(mac):
         args=[]
         with open('subnets.conf', 'r') as f:
             for line in f:
-                args.append(line)
+                args.append(line.split('\n')[0])
 
         ip = args[0].split("/")[0].split(".")   # 192.168.1.0/24 2 8 22 54  -> list of str ['192','168','1','0']
         cidr = int(args[0].split("/")[1])       # 192.168.1.0/24 2 8 22 54  -> str 24

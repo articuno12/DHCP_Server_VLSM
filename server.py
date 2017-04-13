@@ -25,7 +25,7 @@ Offered = {}
 while True :
     # Recieve messages
     data, address = sock.recvfrom(MAX_BYTES)
-    print("got something")
+    # print("got something")
     try :
         TransactionId = DHCP.bytestring2hex(data[4:8],4)
     except Exception as e :
@@ -57,27 +57,40 @@ while True :
         Check , Dic = vlsm.get_info(Mac_str)
         print Check
         print Dic
-        # OfferedIp,SubnetMask,GateWayIp,DNSIp =
-    #
-    #     # DHCP Offer
-    #     # If new Ip is not available
-    #     if OfferedIp[0] == -1 :
-    #         print('\n DHCP Declined : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
-    #         package = DHCP.DhcpDecline(ClientMacAddress,TransactionId,Src)
-    #         sock.sendto(package,dest)
-    #         del Active[TransactionId]
-    #         continue
-    #
-    #     Offered[str(TransactionId)] = (ClientMacAddress,TransactionId,Src,OfferedIp,SubnetMask,DNSIp,GatewayIp)
-    #     package = DHCP.DhcpOffer(ClientMacAddress,TransactionId,Src,OfferedIp,SubnetMask,DNSIp,GatewayIp)
-    #     sock.sendto(package,dest)
-    #
-    # else :
-    #     # DHCP Request
-    #     if MsgOptions[hex(53)][0]!= hex(3) :
-    #         continue
-    #     (ClientMacAddress,TransactionId,Src,OfferedIp,SubnetMask,DNSIp,GatewayIp) = Offered[str(TransactionId)]
-    #
-    #     # DHCP Ack
-    #     package = DHCP.DhcpAck(ClientMacAddress,TransactionId,Src,OfferedIp,SubnetMask,DNSIp,GatewayIp)
-    #     sock.sendto(package,dest)
+        OfferedIp = Dic['ClientIP'].split('.')
+        SubnetMask = Dic['mask'].split('.')
+        GateWayIp = Dic['GatewayIP'].split('.')
+        DNSIp = Dic['DNSIP'].split('.')
+        ServerIp = Src.split('.')
+
+        OfferedIp = [ hex(int(OfferedIp[i])) for i in range(4) ]
+        SubnetMask = [ hex(int(SubnetMask[i])) for i in range(4) ]
+        GateWayIp = [ hex(int(GateWayIp[i])) for i in range(4) ]
+        DNSIp = [ hex(int(DNSIp[i])) for i in range(4) ]
+        ServerIp = [ hex(int(ServerIp[i])) for i in range(4) ]
+
+        # DHCP Offer
+        # If new Ip is not available
+        if Check == 0 :
+            print('\n DHCP Declined : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
+            package = DHCP.DhcpDecline(ClientMacAddress,TransactionId,ServerIp)
+            sock.sendto(package,dest)
+            del Active[TransactionId]
+            continue
+
+        Offered[str(TransactionId)] = (ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask,DNSIp,GateWayIp)
+        package = DHCP.DhcpOffer(ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask,DNSIp,GateWayIp)
+        sock.sendto(package,dest)
+        print('\n DHCP Offer : Transaction Id ' + str(TransactionId) + ' Offered Ip' + str(OfferedIp) )
+
+    else :
+        # DHCP Request
+        if MsgOptions[hex(53)][0]!= hex(3) :
+            continue
+        print('\nGot DHCPREQUEST : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
+        (ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask,DNSIp,GateWayIp) = Offered[str(TransactionId)]
+
+        # DHCP Ack
+        package = DHCP.DhcpAck(ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask,DNSIp,GateWayIp)
+        sock.sendto(package,dest)
+        print('\n DHCP Ack : Transaction Id ' + str(TransactionId) + ' Client Ip' + str(OfferedIp) )
