@@ -6,6 +6,7 @@ macs={}
 current_other_ip = None
 mask = None
 dhcp_Server_id = None
+mac_ip = {}
 
 def min_pow2(x):  # how many bits do we need to borrow
     z = log(x, 2)  # to cover number of hosts
@@ -95,7 +96,7 @@ def norm(ipaddr):
 
 
 def vlsm(ipaddr, hosts):
-
+    global info
     bits = 0
 
     for x in range(len(hosts)):
@@ -119,6 +120,12 @@ def vlsm(ipaddr, hosts):
 
 
 def setserver(): #returns ip for client and dns server
+    global info
+    global mask
+    global no_of_others
+    global current_other_ip
+    global dhcp_Server_id
+    global macs
     args=[]
     try :
         with open('subnets.conf', 'r') as f:
@@ -144,7 +151,7 @@ def setserver(): #returns ip for client and dns server
     for x in range(len(ip)):  # list of str ['192','168','1','0'] ->
         ip[x] = int(ip[x])  # list of int [192,168,1,0]
 
-    if total_hosts > (pow(2, 32 - cidr) - 2):
+    if total_hosts > int((pow(2, 32 - cidr) - 2)):
         Error = "Too many hosts"
 
     t = [(labs[i],i) for i in labs]
@@ -178,9 +185,10 @@ def getip(mac):
     global current_other_ip
     global dhcp_Server_id
     global macs
-    
+    global mac_ip
     Error = None
-
+    if(mac_ip.has_key(mac)):
+        return 1,mac_ip[mac]
     if(macs.has_key(mac)):
         l = macs.get(mac)
     else:
@@ -206,6 +214,7 @@ def getip(mac):
         elif l=='others':
             no_of_others -=1
             client_ip = getnextip(current_other_ip)
+            current_other_ip = client_ip
             mask_l = mask
             gateway_ip = dns_ip = dhcp_Server_id
 
@@ -221,4 +230,5 @@ def getip(mac):
     if Error :
         return 0,Error
     else:
+        mac_ip[mac] = {'ClientIP':client_ip ,'mask':mask_l ,  'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
         return 1,{'ClientIP':client_ip ,'mask':mask_l ,  'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
