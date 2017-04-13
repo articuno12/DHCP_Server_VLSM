@@ -94,7 +94,7 @@ def get_info(mac):
         bits = 0
 
         for x in range(len(hosts)):
-            bits = min_pow2(hosts[x][0] + 2)
+            bits = min_pow2(hosts[x][0])
             ipaddr = getnet(ipaddr, getmask(int(32 - bits)))
             #" SUBNET: %d NEEDED: %3d (%3d %% of) ALLOCATED %4d ADDRESS: %15s :: %15s - %-15s :: %15s MASK: %d (%15s)" % \
             info[str(hosts[x][1])] = [x + 1,
@@ -127,8 +127,8 @@ def get_info(mac):
         labs={}
 
         for i in range(2,2+n):
-            labs[str(str(args[i]).split(':')[0])]= int(str(args[i]).split(':')[1])
-            total_hosts+= int(str(args[i]).split(':')[1])
+            labs[str(str(args[i]).split(':')[0])]= min_pow2(int(str(args[i]).split(':')[1]) + 2)
+            total_hosts+= min_pow2(int(str(args[i]).split(':')[1]) + 2)
 
         for x in range(len(ip)):  # list of str ['192','168','1','0'] ->
             ip[x] = int(ip[x])  # list of int [192,168,1,0]
@@ -136,8 +136,8 @@ def get_info(mac):
         if total_hosts > (pow(2, 32 - cidr) - 2):
             Error = "Too many hosts"
 
-        if (pow(2, 32 - cidr) - 2 - total_hosts) > 0:
-            labs['others'] = pow(2, 32 - cidr) - 2 - total_hosts
+        if (pow(2, 32 - cidr) - 2 - total_hosts  + 2 ) > 0:
+            labs['others'] = min_pow2(pow(2, 32 - cidr) - 2 - total_hosts +2 )
             no_others = False
         else :
             no_others = True
