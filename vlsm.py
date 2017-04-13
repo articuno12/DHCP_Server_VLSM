@@ -172,7 +172,13 @@ def setserver(): #returns ip for client and dns server
         return None
 
 def getip(mac):
-
+    global info
+    global mask
+    global no_of_others
+    global current_other_ip
+    global dhcp_Server_id
+    global macs
+    
     Error = None
 
     if(macs.has_key(mac)):
