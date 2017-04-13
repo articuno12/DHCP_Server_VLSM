@@ -1,6 +1,7 @@
 import sys
 import re
 import socket
+import random
 import getMac
 import DHCP
 
@@ -41,7 +42,10 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 sock.bind((Src, serverPort))
 
 # DHCP Discover
-package = DHCP.DhcpDiscover(MacAddress)
+## make a transcation ID
+TransactionId = [ hex(random.choice(range(256))) for i in range(4) ]
+
+package = DHCP.DhcpDiscover(MacAddress,TransactionId)
 sock.sendto(package, dest)
 
 # DHCP Offer
@@ -50,11 +54,23 @@ while not OfferRecieved :
     try :
         sock.settimeout(5)
         data, address = sock.recvfrom(MAX_BYTES)
+        ## Extract offered Ip and TransactionId
+        TransactionId_recieved = data[4:8]
+        TransactionId_recieved = DHCP.bytestring2hex(TransactionId_recieved,4)
+        if TransactionId != TransactionId_recieved :
+            print("Recieved Unknow message")
+            continue
+        OfferedIp = DHCP.bytestring2hex(data[16:20],4)
+        ServerIp = DHCP.bytestring2hex(data[20:24],4)
         OfferRecieved = True
 
     except socket.timeout :
         sock.sendto(package, dest)
-        
+
+
+
 # DHCP Acknowledgement - CLient
+package = DHCP.DhcpRequest(MacAddress,TransactionId,ServerIp,OfferedIp)
+sock.sendto(package,dest)
 
 # DHCP Acknowledgement - Server
