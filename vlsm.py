@@ -151,6 +151,7 @@ def get_info(mac):
         vlsm(getnet(ip, mask), t)
 
         macs={}
+        Error = None
         for i in range(2+n,len(args)):
             macs[str(args[i]).split(' ')[0]] = str(args[i]).split(' ')[1]
 
