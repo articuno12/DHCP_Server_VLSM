@@ -4,6 +4,7 @@ import socket
 import random
 import getMac
 import DHCP
+import vlsm
 
 MAX_BYTES = 65535
 Src = "192.168.1.1"
@@ -53,7 +54,10 @@ while True :
         print('\nGot DHCPDISCOVER : Transaction Id ' + str(TransactionId) + ' Mac  ' + Mac_str)
 
         # Get new Ip to be allocated to the client
-        OfferedIp,SubnetMask,GateWayIp,DNSIp = vlsm()
+        Check , Dic = vlsm.get_info(Mac_str)
+        print Check
+        print Dic
+        # OfferedIp,SubnetMask,GateWayIp,DNSIp =
     #
     #     # DHCP Offer
     #     # If new Ip is not available

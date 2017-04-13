@@ -90,14 +90,14 @@ def get_info(mac):
 
 
     def vlsm(ipaddr, hosts):
-        global need, allc
+
         bits = 0
 
         for x in range(len(hosts)):
             bits = min_pow2(hosts[x][0] + 2)
             ipaddr = getnet(ipaddr, getmask(int(32 - bits)))
             #" SUBNET: %d NEEDED: %3d (%3d %% of) ALLOCATED %4d ADDRESS: %15s :: %15s - %-15s :: %15s MASK: %d (%15s)" % \
-            info[str(hosts[x][1])] = (x + 1,
+            info[str(hosts[x][1])] = [x + 1,
                    hosts[x][0],
                    (hosts[x][0] * 100) / (int(pow(2, bits)) - 2),
                    int(pow(2, bits)) - 2,
@@ -107,10 +107,9 @@ def get_info(mac):
                    getlast(ipaddr, getmask(int(32 - bits))),
                    norm(getbcast(ipaddr, getmask(int(32 - bits)))),
                    32 - bits,
-                   norm(getmask(int(32 - bits))))
+                   norm(getmask(int(32 - bits)))]
 
-            need += hosts[x][0]
-            allc += int(pow(2, bits)) - 2
+
             ipaddr = getnextaddr(ipaddr, getmask(int(32 - bits)))
 
 
@@ -147,8 +146,7 @@ def get_info(mac):
 
         t = [(labs[i],i) for i in labs]
         t = sorted(t,reverse=True)
-        need = 0
-        allc = 0
+
 
         vlsm(getnet(ip, mask), t)
 
@@ -205,4 +203,4 @@ def get_info(mac):
         else:
             return 1,{'ClientIP':client_ip ,'mask':mask , 'DHCPIP':dhcp_ip , 'GatewayIP':gateway_ip , 'DNSIP':dns_ip }
     info = {}
-    return getip(mac)    
+    return getip(mac)
