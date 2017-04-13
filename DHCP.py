@@ -9,10 +9,35 @@ def hex2bytestring(hexstring) :
     return bytestring
 
 def bytestring2hex(bytestring,length) :
-    arg = ('B')*length
-    ans = struct.unpack(arg,bytestring)
-    hexstring = [ hex(ans[i]) for i in range(length) ]
-    return hexstring
+    try :
+        arg = ('B')*length
+        ans = struct.unpack(arg,bytestring)
+        hexstring = [ hex(ans[i]) for i in range(length) ]
+        return hexstring
+    except Exception as e :
+        print "Exception raised " ,e ,e.args
+        return [-1 for i in range(len)]
+
+def ExtractOption(data) :
+    try :
+        options  = {}
+        data = data[238:]
+        i = 0
+        while i < len(data) :
+            option = bytestring2hex(data[i])
+            length = int(bytestring2hex(data[i+1]),16)
+            arguments = []
+            for j in range(length) :
+                arguments.append(bytestring2hex(data[i+2+j]))
+
+            options[option] = arguments
+            i = i + 2 + length
+
+        return options
+
+    except Exception as e :
+        print "Exception raised  in Extract options" ,e ,e.args
+        return [-1 for i in range(len)]
 
 def DhcpDiscover(MacAddress,TransactionId) :
     OP = b'\x01'     #Message type: Boot Request (1)
@@ -55,7 +80,7 @@ def DhcpOffer(ClientMacAddress,TransactionId,ServerIp,OfferedIp,SubnetMask) :
     CHADDR2 = hex2bytestring([0x00, 0x00])
     CHADDR3 = hex2bytestring([0x00, 0x00, 0x00, 0x00])
     CHADDR4 = hex2bytestring([0x00, 0x00, 0x00, 0x00])
-    CHADDR5 = hex2bytestring(192)
+    CHADDR5 = hex2bytestring([0x00])*192   #Client hardware address padding: 00000000000000000000
     Magiccookie = hex2bytestring([0x63, 0x82, 0x53, 0x63])
     DHCPOptions1 = hex2bytestring([53 , 1 , 2]) # DHCP Offer
     DHCPOptions2 = hex2bytestring([1 , 4 , SubnetMask[0], SubnetMask[1], SubnetMask[2], SubnetMask[3] ]) # SubnetMask
@@ -84,7 +109,7 @@ def DhcpRequest(MacAddress,TransactionId,ServerIp,RequestedIp):
     CHADDR2 = b'\x00\x00'
     CHADDR3 = b'\x00\x00\x00\x00'
     CHADDR4 = b'\x00\x00\x00\x00'
-    CHADDR5 = hex2bytestring(192)               	     #Client hardware address padding: 00000000000000000000
+    CHADDR5 = hex2bytestring([0x00])*192   #Client hardware address padding: 00000000000000000000
     MagicCookie = b'\x63\x82\x53\x63'  	     #Magic cookie: DHCP
     DHCPOptions1 = hex2bytestring([53 , 1 , 3])     	     #Option: (t=53,l=1) DHCP Message Type = DHCP Request
     DHCPOptions2 = hex2bytestring([50 , 4 , RequestedIp[0], RequestedIp[1], RequestedIp[2], RequestedIp[3]])   #Option: (t=50,l=4) Requested IP Adress
@@ -112,7 +137,7 @@ def DhcpAck(ClientMacAddress,TransactionId,ServerIp,ClientIp,SubnetMask,DNSIp,Ga
     CHADDR2 = hex2bytestring([0x00, 0x00])
     CHADDR3 = hex2bytestring([0x00, 0x00, 0x00, 0x00])
     CHADDR4 = hex2bytestring([0x00, 0x00, 0x00, 0x00])
-    CHADDR5 = hex2bytestring(192)
+    CHADDR5 = hex2bytestring([0x00])*192   #Client hardware address padding: 00000000000000000000
     Magiccookie = hex2bytestring([0x63, 0x82, 0x53, 0x63])
     DHCPOptions1 = hex2bytestring([53 , 1 , 5]) #DHCP ACK(value = 5)
     DHCPOptions2 = hex2bytestring([1 , 4 , SubnetMask[0], SubnetMask[1], SubnetMask[2], SubnetMask[3]]) #255.255.255.0 subnet mask
@@ -120,7 +145,6 @@ def DhcpAck(ClientMacAddress,TransactionId,ServerIp,ClientIp,SubnetMask,DNSIp,Ga
     DHCPOptions4 = hex2bytestring([51 , 4 , 0x00, 0x01, 0x51, 0x80]) #86400s(1 day) IP address lease time
     DHCPOptions5 = hex2bytestring([54 , 4 , ServerIp[0], ServerIp[1], ServerIp[2], ServerIp[3]]) #DHCP server
     DHCPOptions6 = hex2bytestring([6 , 4 , DNSIp[0], DNSIp[1], DNSIp[2], DNSIp[3]]) #DHCP DNS Server
-    DHCP
     End = hex2bytestring([0xff])
 
     package = OP + HTYPE + HLEN + HOPS + XID + SECS + FLAGS + CIADDR +YIADDR + SIADDR + GIADDR + CHADDR1 + CHADDR2 + CHADDR3 + CHADDR4 + CHADDR5 + Magiccookie + DHCPOptions1 + DHCPOptions2 + DHCPOptions3 + DHCPOptions4 + DHCPOptions5 + DHCPOptions6 + End
