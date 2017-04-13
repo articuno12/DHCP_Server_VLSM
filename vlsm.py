@@ -2,6 +2,8 @@ from math import pow, ceil, log
 
 info = {}
 no_of_others = 0
+macs={}
+current_other_ip
 
 def min_pow2(x):  # how many bits do we need to borrow
     z = log(x, 2)  # to cover number of hosts
@@ -141,6 +143,9 @@ def setserver(): #returns ip for client and dns server
     t = sorted(t,reverse=True)
     vlsm(getnet(ip, mask), t)
 
+    for i in range(2+n,len(args)):
+        macs[str(args[i]).split(' ')[0]] = str(args[i]).split(' ')[1]
+
     if (pow(2, 32 - cidr) - 2 - total_hosts) > 1:
         no_of_others = pow(2, 32 - cidr) - 2 - total_hosts -1
         dhcp_Server_id = getnextip(info[[len(t)-1][1]][8])
@@ -152,20 +157,17 @@ def setserver(): #returns ip for client and dns server
         no_of_others = 0
         dhcp_Server_id = None
         Error = "Ip cant be assigned to DHCP server"
-
-    return dhcp_Server_id
+    current_other_ip = dhcp_Server_id
+    return norm(dhcp_Server_id)
 
 def getip(mac):
 
-    macs={}
     Error = None
-    for i in range(2+n,len(args)):
-        macs[str(args[i]).split(' ')[0]] = str(args[i]).split(' ')[1]
 
     if(macs.has_key(mac)):
         l = macs.get(mac)
     else:
-        if(no_others):
+        if(no_of_others == 0):
             Error = "IP cant be assigned"
         else:
             l = 'others'
@@ -180,7 +182,6 @@ def getip(mac):
             else:
                 client_ip = None
 
-            dhcp_ip = getnextip(info['others'][5])
             mask = info[l][10]
             gateway_ip = dns_ip = info[l][5]
         else:
@@ -200,7 +201,6 @@ def getip(mac):
                 client_ip = None
         if client_ip:
             client_ip = norm(client_ip)
-            dhcp_ip = norm(dhcp_ip)
             gateway_ip = norm(gateway_ip)
             dns_ip = norm(dns_ip)
         else:
