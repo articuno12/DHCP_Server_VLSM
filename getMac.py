@@ -1,10 +1,11 @@
 from uuid import getnode as get_mac
+import struct
 
 def getMacInBytes():
     mac = str(hex(get_mac()))
-    print(mac)
+    # print(mac)
     mac = mac[2:]
-    print(mac)
+    # print(mac)
     while len(mac) < 12 :
         mac = '0' + mac
     macb = b''
